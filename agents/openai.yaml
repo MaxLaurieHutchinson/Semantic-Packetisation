@@ -1,0 +1,3 @@
+interface:
+  display_name: "Semantic Packetisation"
+  short_description: "Compile verbose context into loss-bounded model handoff packets"
