@@ -18,7 +18,6 @@ COMMON = {"ID", "REF", "FACT", "EVIDENCE", "UNCERTAIN", "LOSS"}
 ALLOWED = {
     "TASK": COMMON
     | {
-        "MODE",
         "STATE",
         "GOAL",
         "ACTION",
@@ -157,7 +156,11 @@ def main() -> int:
     parser.add_argument("packet", type=Path, help="Path to packet text file")
     args = parser.parse_args()
 
-    text = args.packet.read_text(encoding="utf-8")
+    try:
+        text = args.packet.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
     packet_type, records, errors = parse(text)
     if packet_type:
         errors.extend(validate(packet_type, records))
@@ -167,7 +170,7 @@ def main() -> int:
             print(f"ERROR: {error}")
         return 1
 
-    print(f"VALID SP/1 {packet_type}: {len(records)} records")
+    print(f"VALID SP/1 {packet_type}: {len(records)} records (structure only)")
     return 0
 
 

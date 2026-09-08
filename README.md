@@ -1,196 +1,105 @@
-# Semantic Packetisation
+<h1 align="center">Semantic Packetisation</h1>
+<p align="center"><strong>Compact context. Explicit constraints.</strong></p>
+<p align="center">An Agent Skill and readable packet format for model handoffs.</p>
 
-Semantic Packetisation is an Agent Skill for turning verbose prompts, model handoffs and worker results into compact, loss-bounded semantic packets.
+<p align="center">
+  <a href="https://github.com/MaxLaurieHutchinson/Semantic-Packetisation/actions/workflows/test.yml"><img src="https://github.com/MaxLaurieHutchinson/Semantic-Packetisation/actions/workflows/test.yml/badge.svg" alt="Tests" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license" /></a>
+</p>
 
-The optimisation target is not the shortest text.
+<p align="center">
+  <a href="references/protocol.md">Protocol</a> &middot;
+  <a href="references/examples.md">Examples</a> &middot;
+  <a href="references/evaluation.md">Evaluation</a>
+</p>
 
-It is the smallest payload that still preserves everything required for the next model to execute or judge correctly.
+Turn repeated background, buried constraints and worker summaries into **SP/1**: a small, inspectable structure for the next model's decision.
 
-> Route the minimum sufficient semantics.
+The goal is not the shortest text. It is enough context to act or judge correctly, with authority, uncertainty and boundaries intact.
 
-## Why
+## See it in use
 
-Long agentic workflows repeatedly pay for the same context:
+**Source**
 
-* prior decisions are restated in prose;
-* large artefacts are copied instead of referenced;
-* workers return narrative summaries rather than evidence;
-* strong models rediscover work already completed by cheaper models;
-* explicit uncertainty and gaps get softened during summarisation.
+> The evidence review is complete and implementation is approved. Build V2 in the existing worktree. Checkpoint V1 before changing anything. Keep the public API unchanged. Run the unit tests and return the diff and test results. Do not push, publish or contact anyone. Stop if a change to the public API is required.
 
-Semantic Packetisation converts that traffic into a small intermediate representation called `SP/1`.
-
-```text
-verbose context
-    -> classify loss boundaries
-    -> SP/1 task/context packet
-    -> worker
-    -> SP/1 result packet
-    -> reviewer
-```
-
-## What makes this project specific
-
-This is not a claim to have invented compact agent communication.
-
-The specific focus is decision-sufficient model routing:
-
-1. preserve invariants, prohibitions and authority as first-class records;
-2. preserve genuine gaps and uncertainty rather than smoothing them away;
-3. pass durable context by reference when the receiver can resolve it;
-4. return evidence packets instead of long worker narratives;
-5. optimise frontier-model input around the evidence needed for judgement;
-6. make loss policy explicit so compression is bounded and reviewable.
-
-The intended outcome is lower context and quota use without weakening acceptance quality.
-
-## Quick example
-
-Verbose instruction:
-
-```text
-The evidence review is complete. The previous read-only instruction no longer applies.
-Implement V2 in the existing worktree, but checkpoint V1 first. Do not restart broad
-review. Use the approved architecture and evidence ledger as authority. Render and
-verify the result. Do not push, publish, submit or contact anyone.
-```
-
-Packet:
+**Packet**
 
 ```text
 SP/1 TASK
-STATE evidence_review_complete
-STATE readonly_superseded
-GOAL build_v2
-SCOPE existing_worktree
-AUTH V2_ARCH
-AUTH EVIDENCE_LEDGER
-INVARIANT checkpoint_v1_first
-INVARIANT no_broad_rediscovery
-POST render
-POST deterministic_verify
-SIDE_EFFECT forbid=push,publish,submit,contact
+STATE evidence review complete; implementation approved
+GOAL build V2
+SCOPE existing worktree
+INVARIANT checkpoint V1 before making changes
+INVARIANT public API unchanged
+POST run unit tests
+RETURN diff and test results
+STOP public API change required
+SIDE_EFFECT forbid=push,publish,contact
 EXECUTE yes
 ```
 
-The prose disappeared. The decision-critical semantics did not.
+This illustrates explicit constraints, not measured token savings. Try the included [source](examples/handoff.txt) and [packet](examples/handoff.sp).
 
-## Loss classes
+## Try it
 
-`L0` means preserve exactly or canonically.
-
-Examples: dates, IDs, paths, invariants, prohibitions, authority, gaps, uncertainty, evidence status, security and consistency constraints.
-
-`L1` means preserve meaning but condense wording.
-
-Examples: rationale, narrative context and implementation history.
-
-`L2` means safe to omit for the next decision.
-
-Examples: pleasantries, repeated explanations and redundant process narration.
-
-If classification is uncertain, use the safer class.
-
-## Packet types
-
-`TASK` carries instructions to a worker.
-
-`CONTEXT` freezes reusable facts, authority, gaps and references.
-
-`RESULT` carries concrete evidence back from execution.
-
-`REVIEW` carries the smallest sufficient evidence set for a consequential judgement.
-
-See `references/protocol.md` for the SP/1 grammar.
-
-## Example result packet
-
-```text
-SP/1 RESULT
-ID payment_retry_07
-STATUS PASS
-CHANGED src/payments/callback.py
-CHANGED tests/payments/test_callback.py
-VERIFIED unit_tests=18/18
-VERIFIED integration_tests=6/6
-EVIDENCE duplicate_callback_test=PASS
-DEVIATION none
-REF diff=git:4f92a1c role=evidence
-```
-
-The reviewer can spend its context on judgement rather than rediscovery.
-
-## Installation
-
-This repository follows the Agent Skills layout.
-
-The runtime entry point is `SKILL.md`.
-
-Supporting material lives under `references/` and deterministic utilities under `scripts/`.
-
-## Validation
-
-Validate packet structure:
+Python 3.10 or newer. No runtime dependencies are required for validation or basic size comparison.
 
 ```bash
-python scripts/validate_packet.py packet.sp
+git clone https://github.com/MaxLaurieHutchinson/Semantic-Packetisation.git
+cd Semantic-Packetisation
+python scripts/validate_packet.py examples/handoff.sp
+python scripts/compare_payloads.py examples/handoff.txt examples/handoff.sp
 ```
 
-Compare source and packet payload sizes:
+For optional token counts, install `tiktoken` and select an encoding appropriate to the receiving model:
 
 ```bash
-python scripts/compare_payloads.py source.txt packet.sp
+python -m pip install tiktoken
+python scripts/compare_payloads.py examples/handoff.txt examples/handoff.sp --encoding o200k_base
 ```
 
-The comparison script reports token counts only when `tiktoken` is installed. Character and word counts are labelled as proxies.
+Without it, counts are labelled as proxies. Already short, clear prompts may be better left alone.
 
-Structural validation does not prove semantic completeness. A valid packet can still be wrong if it omitted an L0 fact.
+### As an Agent Skill
 
-## Evaluation
+Copy the repository into a skill directory supported by your host, named `semantic-packetisation`. Keep [SKILL.md](SKILL.md), `agents/`, `references/` and `scripts/` together. There is no bundled marketplace plugin.
 
-`evals/packetisation_scenarios.json` contains adversarial cases around:
+> Packetise this handoff. Preserve exact constraints, unresolved questions and permissions. Keep critical facts inline when the receiver cannot access the references.
 
-* side-effect preservation;
-* genuine gaps;
-* inaccessible references;
-* evidence sufficiency;
-* authority conflicts;
-* cases where packetisation should not be used.
+## What crosses the boundary
 
-See `references/evaluation.md` for the evaluation model.
+| Loss class | Treatment |
+| :--- | :--- |
+| **L0: exact** | Preserve facts, authority, prohibitions, uncertainty and acceptance criteria. |
+| **L1: condensed** | Shorten rationale and background without changing meaning. |
+| **L2: disposable** | Remove repetition and filler that cannot affect the decision. |
+
+When uncertain, choose the safer class. References must be accessible to the receiver.
+
+**`TASK`** carries instructions. **`CONTEXT`** carries reusable facts. **`RESULT`** returns evidence. **`REVIEW`** carries criteria and a decision. See the [protocol](references/protocol.md) and [worked examples](references/examples.md).
+
+## Status and limits
+
+**Experimental v0.1.** Tests cover structure, commands and examples. The [six evaluation scenarios](evals/packetisation_scenarios.json) are a catalogue, not executed model trials. No published benchmark establishes token savings or improved task success; the [evaluation method](references/evaluation.md) describes how to test those claims.
+
+Structural validity does not prove semantic completeness, accessible references or permission to act. `AUTH` and `EXECUTE` cannot override the receiving host's permissions or higher priority instructions.
+
+The scripts do not execute packets or resolve references. The optional tokenizer may download encoding data on first use. External model use follows that host's data handling rules.
+
+## Development
+
+```bash
+python -m pip install -r requirements-dev.txt
+python -m pytest -q
+```
+
+CI runs on Linux and Windows with Python 3.10 and 3.13. See [Contributing](CONTRIBUTING.md).
 
 ## Related work
 
-PAIRL is a compact, human-readable, machine-parseable format for agent-to-agent communication. It includes pointer-first state, evidence records and explicit separation between lossy and lossless information. Semantic Packetisation has a narrower boundary: it is an Agent Skill and intermediate representation for decision-sufficient model routing, evidence return and frontier review rather than a general transport format.
-
-PAIRL: https://github.com/dwehrmann/PAIRL
-
-The phrase "semantic packet" also appears in unrelated work on secure semantic communications. This project does not claim ownership of the phrase.
-
-## Relationship to Astra Quota Router
-
-Semantic Packetisation is complementary to Astra Quota Router.
-
-Astra Quota Router decides where reasoning should happen.
-
-Semantic Packetisation decides how much meaning needs to cross the boundary.
-
-Together:
-
-```text
-risk-based routing
-    +
-minimum sufficient semantics
-    +
-evidence-based acceptance
-```
-
-## Status
-
-Experimental v0.1.
-
-The next proof point is empirical: compare natural language, compact structured English, SP/1 and extreme symbolic encoding across multiple models, then measure semantic retention, task success, escalation accuracy, acceptance accuracy and actual token use.
+[PAIRL](https://github.com/dwehrmann/PAIRL) explores readable agent communication. This project focuses on decision context and evidence handoffs, not transport. Astra Quota Router is complementary: it chooses where work goes; this skill shapes the context sent with it.
 
 ## License
 
-MIT.
+[MIT](LICENSE). Copyright 2026 Max Laurie Hutchinson.

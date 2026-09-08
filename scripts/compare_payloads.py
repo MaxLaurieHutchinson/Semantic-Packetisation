@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import sys
 
 
 def count_basic(text: str) -> dict[str, int]:
@@ -42,8 +43,12 @@ def main() -> int:
     parser.add_argument("--encoding", default="o200k_base", help="tiktoken encoding name")
     args = parser.parse_args()
 
-    source = args.source.read_text(encoding="utf-8")
-    packet = args.packet.read_text(encoding="utf-8")
+    try:
+        source = args.source.read_text(encoding="utf-8")
+        packet = args.packet.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
 
     src = count_basic(source)
     pkt = count_basic(packet)
