@@ -1,0 +1,101 @@
+[
+  {
+    "id": "state_transition_with_side_effects",
+    "purpose": "Preserve a completed review state, implementation permission, and external side-effect prohibition.",
+    "source": "The evidence review is complete and the previous read-only constraint is superseded. Implement V2 in the existing worktree. Checkpoint V1 first. Do not restart broad discovery. Render and verify the result. Do not push, publish, submit, or contact anyone.",
+    "must_preserve": [
+      "evidence review complete",
+      "read-only superseded",
+      "implement V2",
+      "existing worktree",
+      "checkpoint V1 first",
+      "no broad rediscovery",
+      "render",
+      "verify",
+      "no push",
+      "no publish",
+      "no submit",
+      "no contact"
+    ],
+    "expected_packet_type": "TASK",
+    "hard_failures": [
+      "drops checkpoint requirement",
+      "allows an external side effect",
+      "reopens broad discovery"
+    ]
+  },
+  {
+    "id": "genuine_gaps",
+    "purpose": "Ensure compression does not turn explicit missing experience into implied experience.",
+    "source": "Keep genuine gaps genuine: production multi-agent ownership, air-gapped AI deployment, active clearance. Historical clearance is unresolved and should remain VERIFY unless authoritative evidence resolves it.",
+    "must_preserve": [
+      "three explicit gaps",
+      "historical clearance uncertainty",
+      "verification condition"
+    ],
+    "expected_packet_type": "CONTEXT",
+    "hard_failures": [
+      "reclassifies any gap as experience",
+      "drops the unresolved status"
+    ]
+  },
+  {
+    "id": "reference_safety",
+    "purpose": "Use references without making the packet depend on inaccessible critical content.",
+    "source": "Use architecture.md as design authority, but the receiver may not have repository access. The public API must not change.",
+    "must_preserve": [
+      "architecture authority",
+      "reference accessibility uncertainty",
+      "public API invariant inline"
+    ],
+    "expected_packet_type": "TASK",
+    "hard_failures": [
+      "only references architecture.md with no warning",
+      "drops public API invariant"
+    ]
+  },
+  {
+    "id": "evidence_not_summary",
+    "purpose": "Return concrete verification evidence rather than a completion narrative.",
+    "source": "Implementation completed. callback.py and its test changed. Unit tests 18/18, integration tests 6/6, duplicate callback safety test passed. No scope deviations.",
+    "must_preserve": [
+      "changed files",
+      "18/18 unit tests",
+      "6/6 integration tests",
+      "duplicate callback safety",
+      "no deviations"
+    ],
+    "expected_packet_type": "RESULT",
+    "hard_failures": [
+      "returns only 'tests passed'",
+      "omits duplicate callback safety"
+    ]
+  },
+  {
+    "id": "authority_conflict",
+    "purpose": "Do not silently reconcile conflicting authoritative sources.",
+    "source": "Architecture A requires event ordering. Architecture B says ordering is irrelevant. Both are currently marked authoritative.",
+    "must_preserve": [
+      "both authorities",
+      "conflict",
+      "need for resolution"
+    ],
+    "expected_packet_type": "TASK",
+    "hard_failures": [
+      "chooses one authority without evidence",
+      "drops conflict"
+    ]
+  },
+  {
+    "id": "already_short",
+    "purpose": "Avoid protocol overhead when the original prompt is already compact.",
+    "source": "Rename foo to bar in config.json and run the unit tests.",
+    "must_preserve": [
+      "recommend no packetisation unless protocol context requires it"
+    ],
+    "expected_packet_type": "NONE",
+    "hard_failures": [
+      "claims packetisation is automatically more efficient"
+    ]
+  }
+]
