@@ -1,24 +1,28 @@
 # Contributing
 
-Semantic Packetisation is experimental. Contributions are most useful when they include evidence about semantic retention and model behaviour rather than compression ratio alone.
+Keep Semantic Packetisation small. Changes should improve semantic retention, clarity or reliability rather than compression ratio alone.
 
-## Good contributions
+## Run the checks
 
-* adversarial examples where SP/1 loses an invariant;
-* cases where a reference becomes unsafe or stale;
-* model comparisons showing different decoding behaviour;
-* measured token comparisons under named tokenizers;
-* RESULT packets that improve or harm review quality;
-* simpler protocol constructs that preserve the same semantics.
+Use Python 3.10 or newer from the repository root:
 
-## Protocol changes
+```bash
+python -m pip install -r requirements-dev.txt
+python -m pytest -q
+```
 
-For a protocol change, include:
+The suite checks the parser, record vocabulary, command behaviour, complete example packets and evaluation catalogue structure. It does not run model trials or prove semantic retention. The optional tokenizer is not required for these checks.
 
-1. the problem in the current format;
-2. a before and after example;
-3. the semantic property preserved or improved;
-4. any added ambiguity or token overhead;
-5. at least one evaluation case.
+## Useful contributions
 
-Do not optimise the grammar solely for character count.
+Cases that lose an invariant, hide uncertainty, rely on inaccessible references or mislead a reviewer are especially valuable. Include the source, resulting packet and a clear explanation of what changed or went missing.
+
+For protocol or validator changes, include a failing regression test, a before and after example, the semantic property affected and any compatibility implications. Keep the protocol and accepted record vocabulary aligned.
+
+Preserve `evals/` for scenario data and evaluation assets, and `tests/` for deterministic regression checks. A scenario definition is not evidence that a model passed it.
+
+## Claims and scope
+
+Label illustrative examples and distinguish structural checks from semantic or behavioural evidence. Report actual token counts only with a named tokenizer; never relabel character reductions as token savings.
+
+Avoid new dependencies, protocol fields or abstraction layers unless a concrete use case needs them. Keep installation instructions specific to what has actually been packaged or tested.
